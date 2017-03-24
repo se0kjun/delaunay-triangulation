@@ -7,9 +7,15 @@ var vertex = function(x, y) {
     this.compare = function(vert) {
         return (vert.x == this.x && vert.y == this.y);
     }
-    
-    this.compareOr = function(vert) {
-        return (vert.x == this.x || vert.y == this.y);
+ 
+    this.draw = function(canvasCtx) { 
+        canvasCtx.beginPath();
+        canvasCtx.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+        canvasCtx.fillStyle = 'green';
+        canvasCtx.fill();
+        canvasCtx.lineWidth = 5;
+        canvasCtx.strokeStyle = '#003300';
+        canvasCtx.stroke();            
     }
 }
 
@@ -20,6 +26,14 @@ var edge = function(v1, v2) {
     this.compare = function(_edge) {
         return (_edge.vertices[0].compare(this.vertices[0]) && _edge.vertices[1].compare(this.vertices[1])) || 
             (_edge.vertices[0].compare(this.vertices[1]) && _edge.vertices[1].compare(this.vertices[0]));
+    }
+    
+    this.draw = function(canvasCtx) {
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(this.vertices[0].x, this.vertices[0].y);
+        canvasCtx.lineTo(this.vertices[1].x, this.vertices[1].y);
+        canvasCtx.strokeStyle = '#0000FF';
+        canvasCtx.stroke();
     }
 }
 
@@ -55,6 +69,23 @@ var triangle = function(v1, v2, v3) {
         return (this.vertices[0].compare(tri.vertices[0]) || this.vertices[0].compare(tri.vertices[1]) || this.vertices[0].compare(tri.vertices[2])) &&
             (this.vertices[1].compare(tri.vertices[0]) || this.vertices[1].compare(tri.vertices[1]) || this.vertices[1].compare(tri.vertices[2])) &&
             (this.vertices[2].compare(tri.vertices[0]) || this.vertices[2].compare(tri.vertices[1]) || this.vertices[2].compare(tri.vertices[2]));
+    }
+    
+    this.draw = function(canvasCtx) {
+        this.vertices.forEach(function(v) {
+            v.draw(canvasCtx);
+        });
+        this.edges.forEach(function(e) {
+            e.draw(canvasCtx);
+        });
+    }
+    
+    this.drawCircumCircle = function(canvasCtx) {
+        canvasCtx.beginPath();
+        canvasCtx.arc(this.circumCircle.x, this.circumCircle.y, Math.sqrt(this.circumCircle.radius), 0, 2 * Math.PI, false);
+        canvasCtx.lineWidth = 1;
+        canvasCtx.strokeStyle = '#00FF00';
+        canvasCtx.stroke();        
     }
     
     function circumCenter (vertices) {
@@ -109,6 +140,7 @@ var DelanunayTriangulation = new function() {
     }
     
     this.superTriangle = function() {
+        // make a supertriangle
         var minX = Number.MAX_VALUE, minY = Number.MAX_VALUE, maxX = Number.MIN_VALUE, maxY = Number.MIN_VALUE;
         this.vertices.forEach(function(elem) {
             if (elem.x < minX) minX = elem.x;
@@ -128,18 +160,14 @@ var DelanunayTriangulation = new function() {
     }
     
     this.addPoint = function(v) {
-//        if (this.vertices.length < 2) {
-//            this.vertices.push(v);
-//            return;
-//        }
-        
         this.vertices.push(v);
         var s_triangle = this.superTriangle();
-        this.s_triangle_tmp = s_triangle;
+        this.triangles = [];
         // insert super triangle
         this.triangles.unshift(s_triangle);
         
         this.vertices.forEach(function(pt) {
+            // find bad triangles
             var badTriangles = [];
             this.triangles.forEach(function(tr) {
                 if (this.checkInCircle(pt, tr))
@@ -174,78 +202,32 @@ var DelanunayTriangulation = new function() {
                 }, this);
             }, this);
             
-//            this.triangles.forEach(function(tri, idx) {
-//                badTriangles.every(function(badTri) {
-//                    if (tri.compare(badTri)) {
-//                        this.triangles.splice(idx, 1);
-//                        //break;
-//                        return false;
-//                    } else return true;
-//                }, this);
-//            }, this);
-            
+            // triangulate
             polygonEdges.forEach(function(ed) {
                 this.triangles.push(new triangle(ed.vertices[0], ed.vertices[1], pt));
             }, this);
-            
-            this.draw();
         }, this);
         
+        // remove triangles that contains vertices of super-triangle
         this.triangles = this.triangles.filter(function(tri) {
             return (!((tri.vertices[0].compare(s_triangle.vertices[0]) || tri.vertices[0].compare(s_triangle.vertices[1]) || tri.vertices[0].compare(s_triangle.vertices[2])) ||
             (tri.vertices[1].compare(s_triangle.vertices[0]) || tri.vertices[1].compare(s_triangle.vertices[1]) || tri.vertices[1].compare(s_triangle.vertices[2])) ||
             (tri.vertices[2].compare(s_triangle.vertices[0]) || tri.vertices[2].compare(s_triangle.vertices[1]) || tri.vertices[2].compare(s_triangle.vertices[2]))));
         }, this);
-        
-//        this.triangles = this.triangles.filter(function(tri) {
-//            return this.vertices.every(function(p) { if(this.checkInCircle(p, tri)) return false; else return true; }, this);
-//        }, this);
     }
     
     this.draw = function() {
         this.clear();
 
+        // draw vertex
         this.vertices.forEach(function(pt) {
-            this.canvasCtx.beginPath();
-            this.canvasCtx.arc(pt.x, pt.y, 20, 0, 2 * Math.PI, false);
-            this.canvasCtx.fillStyle = 'green';
-            this.canvasCtx.fill();
-            this.canvasCtx.lineWidth = 5;
-            this.canvasCtx.strokeStyle = '#003300';
-            this.canvasCtx.stroke();            
+            pt.draw(this.canvasCtx);
         }, this);
-//        var tmp = this.triangles.filter(function(tri) {
-//            var s_triangle = this.s_triangle_tmp;
-//            return !((tri.vertices[0].compare(s_triangle.vertices[0]) || tri.vertices[0].compare(s_triangle.vertices[1]) || tri.vertices[0].compare(s_triangle.vertices[2])) ||
-//            (tri.vertices[1].compare(s_triangle.vertices[0]) || tri.vertices[1].compare(s_triangle.vertices[1]) || tri.vertices[1].compare(s_triangle.vertices[2])) ||
-//            (tri.vertices[2].compare(s_triangle.vertices[0]) || tri.vertices[2].compare(s_triangle.vertices[1]) || tri.vertices[2].compare(s_triangle.vertices[2])));
-//        }, this);
-        this.triangles.forEach(function(elem) {
-//            this.canvasCtx.beginPath();
-//            this.canvasCtx.arc(elem.circumCircle.x, elem.circumCircle.y, Math.sqrt(elem.circumCircle.radius), 0, 2 * Math.PI, false);
-//            this.canvasCtx.lineWidth = 5;
-//            this.canvasCtx.strokeStyle = '#FF0000';
-//            this.canvasCtx.stroke();
-//            
-            this.canvasCtx.beginPath();
-            elem.edges.forEach(function(edge) {
-//                this.canvasCtx.arc(edge.vertices[0].x, edge.vertices[0].y, 10, 0, 2 * Math.PI, false);
-//                this.canvasCtx.fillStyle = 'green';
-//                this.canvasCtx.fill();
-//                this.canvasCtx.stroke();
-
-                this.canvasCtx.moveTo(edge.vertices[0].x, edge.vertices[0].y);
-                this.canvasCtx.lineTo(edge.vertices[1].x, edge.vertices[1].y);
-                this.canvasCtx.strokeStyle = '#0000FF';
-
-//                this.canvasCtx.lineTo(edge.vertices[2].x, edge.vertices[2].y);
-                this.canvasCtx.stroke();
-
-//                this.canvasCtx.arc(edge.vertices[1].x, edge.vertices[1].y, 10, 0, 2 * Math.PI, false);
-//                this.canvasCtx.fillStyle = 'green';
-//                this.canvasCtx.fill();
-//                this.canvasCtx.stroke();
-            }, this);
+        
+        // draw triangles
+        this.triangles.forEach(function(tr) {
+            tr.drawCircumCircle(this.canvasCtx);
+            tr.draw(this.canvasCtx);
         }, this);
     }
     
