@@ -7,6 +7,10 @@ var vertex = function(x, y) {
     this.compare = function(vert) {
         return (vert.x == this.x && vert.y == this.y);
     }
+    
+    this.compareOr = function(vert) {
+        return (vert.x == this.x || vert.y == this.y);
+    }
 }
 
 var edge = function(v1, v2) {
@@ -124,13 +128,14 @@ var DelanunayTriangulation = new function() {
     }
     
     this.addPoint = function(v) {
-        if (this.vertices.length < 2) {
-            this.vertices.push(v);
-            return;
-        }
+//        if (this.vertices.length < 2) {
+//            this.vertices.push(v);
+//            return;
+//        }
         
         this.vertices.push(v);
         var s_triangle = this.superTriangle();
+        this.s_triangle_tmp = s_triangle;
         // insert super triangle
         this.triangles.unshift(s_triangle);
         
@@ -145,66 +150,103 @@ var DelanunayTriangulation = new function() {
             var polygonEdges = [];
             badTriangles.forEach(function(badTri) {
                 badTri.edges.forEach(function(ed) {
-                    var tmp = polygonEdges.every(function(polyEd) {
-                        if (ed.compare(polyEd))
+                    var tmpIdx;
+                    var tmp = polygonEdges.every(function(polyEd, idx) {
+                        if (ed.compare(polyEd)) {
+                            tmpIdx = idx;
                             //break;
                             return false;
+                        }
                         return true;
                     });
                     if (tmp) polygonEdges.push(ed);
+                    else polygonEdges.splice(tmpIdx, 1);
                 });
             });
             
             // remove bad triangle
-            this.triangles.forEach(function(tri, idx) {
-                badTriangles.every(function(badTri) {
+            this.triangles = this.triangles.filter(function(tri) {
+                return badTriangles.every(function(badTri) {
                     if (tri.compare(badTri)) {
-                        this.triangles.splice(idx, 1);
                         //break;
                         return false;
                     } else return true;
                 }, this);
             }, this);
             
+//            this.triangles.forEach(function(tri, idx) {
+//                badTriangles.every(function(badTri) {
+//                    if (tri.compare(badTri)) {
+//                        this.triangles.splice(idx, 1);
+//                        //break;
+//                        return false;
+//                    } else return true;
+//                }, this);
+//            }, this);
+            
             polygonEdges.forEach(function(ed) {
                 this.triangles.push(new triangle(ed.vertices[0], ed.vertices[1], pt));
             }, this);
+            
+            this.draw();
         }, this);
         
-        this.triangles.forEach(function(tri, idx) {
-            if ((tri.vertices[0].compare(s_triangle.vertices[0]) || tri.vertices[0].compare(s_triangle.vertices[1]) || tri.vertices[0].compare(s_triangle.vertices[2])) ||
+        this.triangles = this.triangles.filter(function(tri) {
+            return (!((tri.vertices[0].compare(s_triangle.vertices[0]) || tri.vertices[0].compare(s_triangle.vertices[1]) || tri.vertices[0].compare(s_triangle.vertices[2])) ||
             (tri.vertices[1].compare(s_triangle.vertices[0]) || tri.vertices[1].compare(s_triangle.vertices[1]) || tri.vertices[1].compare(s_triangle.vertices[2])) ||
-            (tri.vertices[2].compare(s_triangle.vertices[0]) || tri.vertices[2].compare(s_triangle.vertices[1]) || tri.vertices[2].compare(s_triangle.vertices[2])))
-                this.triangles.splice(idx, 1);
+            (tri.vertices[2].compare(s_triangle.vertices[0]) || tri.vertices[2].compare(s_triangle.vertices[1]) || tri.vertices[2].compare(s_triangle.vertices[2]))));
         }, this);
+        
+//        this.triangles = this.triangles.filter(function(tri) {
+//            return this.vertices.every(function(p) { if(this.checkInCircle(p, tri)) return false; else return true; }, this);
+//        }, this);
     }
     
     this.draw = function() {
+        this.clear();
+
         this.vertices.forEach(function(pt) {
             this.canvasCtx.beginPath();
-            this.canvasCtx.arc(pt.x, pt.y, 50, 0, 2 * Math.PI, false);
+            this.canvasCtx.arc(pt.x, pt.y, 20, 0, 2 * Math.PI, false);
             this.canvasCtx.fillStyle = 'green';
             this.canvasCtx.fill();
             this.canvasCtx.lineWidth = 5;
             this.canvasCtx.strokeStyle = '#003300';
             this.canvasCtx.stroke();            
         }, this);
-        
-//        this.triangles.forEach(function(elem) {
-//            this.canvasCtx.arc(elem.edges.vertices[0].x, elem.edges.vertices[0].y, 10, 0, 2 * Math.PI, false);
-//            this.canvasCtx.fillStyle = 'green';
-//            this.canvasCtx.fill();
-//            this.canvasCtx.stroke();
-//
-//            this.canvasCtx.moveTo(elem.edges.vertices[0].x, elem.edges.vertices[0].y);
-//            this.canvasCtx.lineTo(elem.edges.vertices[1].x, elem.edges.vertices[1].y);
-//            this.canvasCtx.stroke();
-//
-//            this.canvasCtx.arc(elem.edges.vertices[1].x, elem.edges.vertices[1].y, 10, 0, 2 * Math.PI, false);
-//            this.canvasCtx.fillStyle = 'green';
-//            this.canvasCtx.fill();
-//            this.canvasCtx.stroke();
+//        var tmp = this.triangles.filter(function(tri) {
+//            var s_triangle = this.s_triangle_tmp;
+//            return !((tri.vertices[0].compare(s_triangle.vertices[0]) || tri.vertices[0].compare(s_triangle.vertices[1]) || tri.vertices[0].compare(s_triangle.vertices[2])) ||
+//            (tri.vertices[1].compare(s_triangle.vertices[0]) || tri.vertices[1].compare(s_triangle.vertices[1]) || tri.vertices[1].compare(s_triangle.vertices[2])) ||
+//            (tri.vertices[2].compare(s_triangle.vertices[0]) || tri.vertices[2].compare(s_triangle.vertices[1]) || tri.vertices[2].compare(s_triangle.vertices[2])));
 //        }, this);
+        this.triangles.forEach(function(elem) {
+//            this.canvasCtx.beginPath();
+//            this.canvasCtx.arc(elem.circumCircle.x, elem.circumCircle.y, Math.sqrt(elem.circumCircle.radius), 0, 2 * Math.PI, false);
+//            this.canvasCtx.lineWidth = 5;
+//            this.canvasCtx.strokeStyle = '#FF0000';
+//            this.canvasCtx.stroke();
+//            
+            this.canvasCtx.beginPath();
+            elem.edges.forEach(function(edge) {
+//                this.canvasCtx.arc(edge.vertices[0].x, edge.vertices[0].y, 10, 0, 2 * Math.PI, false);
+//                this.canvasCtx.fillStyle = 'green';
+//                this.canvasCtx.fill();
+//                this.canvasCtx.stroke();
+
+                this.canvasCtx.moveTo(edge.vertices[0].x, edge.vertices[0].y);
+                this.canvasCtx.lineTo(edge.vertices[1].x, edge.vertices[1].y);
+                this.canvasCtx.strokeStyle = '#0000FF';
+
+//                this.canvasCtx.lineTo(edge.vertices[2].x, edge.vertices[2].y);
+                this.canvasCtx.stroke();
+
+//                this.canvasCtx.arc(edge.vertices[1].x, edge.vertices[1].y, 10, 0, 2 * Math.PI, false);
+//                this.canvasCtx.fillStyle = 'green';
+//                this.canvasCtx.fill();
+//                this.canvasCtx.stroke();
+            }, this);
+        }, this);
     }
     
     this.clear = function() {
@@ -228,7 +270,6 @@ function init() {
 
 function render() {
     DelanunayTriangulation.draw();
-//    DelanunayTriangulation.clear();
 }
     
 function animate() {
