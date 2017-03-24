@@ -2,8 +2,27 @@
 <html>
 <head>
     <script src="./js/index.js"></script>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="https://unpkg.com/blaze">
 </head>
 <body>
-	<canvas id="triangulation" width="600" height="600" style="border:3px solid black;"></canvas>
+    <div class="title">
+        <h1 class="c-heading u-centered">delaunay-triangulation</h1>
+    </div>
+    <div class="canvas-wrapper">
+        <canvas id="triangulation" width="600" height="600"></canvas>
+    </div>
+    <div class="u-centered triangulation-info">
+        <p>Triangles: </p><p id="triangle_number"></p>
+    </div>
+    <div class="u-center-block">
+        <label class="u-center-block__content c-toggle c-toggle--info">
+            <input id="circumcircle" type="checkbox" checked>
+            <div class="c-toggle__track">
+                <div class="c-toggle__handle"></div>
+            </div>
+            circumcircle
+        </label>
+    </div>
 </body>
 </html>

@@ -1,0 +1,21 @@
+body {
+    background-color: #f7f7f7;
+}
+
+.canvas-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+#triangulation {
+    border:3px solid black;
+    background-color:white;
+}
+
+.triangulation-info p {
+    display: inline-block;
+}
+
+#triangle_number {
+    margin-left: 10px;
+}

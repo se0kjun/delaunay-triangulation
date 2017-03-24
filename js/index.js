@@ -218,17 +218,20 @@ var DelanunayTriangulation = new function() {
     
     this.draw = function() {
         this.clear();
+        
+        // draw triangles
+        this.triangles.forEach(function(tr) {
+            if (document.getElementById('circumcircle').checked)
+                tr.drawCircumCircle(this.canvasCtx);
+            tr.draw(this.canvasCtx);
+        }, this);
 
         // draw vertex
         this.vertices.forEach(function(pt) {
             pt.draw(this.canvasCtx);
         }, this);
         
-        // draw triangles
-        this.triangles.forEach(function(tr) {
-            tr.drawCircumCircle(this.canvasCtx);
-            tr.draw(this.canvasCtx);
-        }, this);
+        document.getElementById('triangle_number').textContent = this.triangles.length;
     }
     
     this.clear = function() {
