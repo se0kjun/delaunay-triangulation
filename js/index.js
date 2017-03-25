@@ -10,10 +10,10 @@ var vertex = function(x, y) {
  
     this.draw = function(canvasCtx) { 
         canvasCtx.beginPath();
-        canvasCtx.arc(this.x, this.y, 10, 0, 2 * Math.PI, false);
+        canvasCtx.arc(this.x, this.y, 5, 0, 2 * Math.PI, false);
         canvasCtx.fillStyle = 'green';
         canvasCtx.fill();
-        canvasCtx.lineWidth = 5;
+        canvasCtx.lineWidth = 2;
         canvasCtx.strokeStyle = '#003300';
         canvasCtx.stroke();            
     }
@@ -218,13 +218,20 @@ var DelanunayTriangulation = new function() {
     
     this.draw = function() {
         this.clear();
-        
+
         // draw triangles
-        this.triangles.forEach(function(tr) {
-            if (document.getElementById('circumcircle').checked)
+        if (document.getElementById('delaunay').checked) {
+            this.triangles.forEach(function(tr) {
+                tr.draw(this.canvasCtx);
+            }, this);
+        }
+        
+        // draw circumcircle
+        if (document.getElementById('circumcircle').checked) {
+            this.triangles.forEach(function(tr) {
                 tr.drawCircumCircle(this.canvasCtx);
-            tr.draw(this.canvasCtx);
-        }, this);
+            }, this);            
+        }
 
         // draw vertex
         this.vertices.forEach(function(pt) {
@@ -237,6 +244,30 @@ var DelanunayTriangulation = new function() {
     this.clear = function() {
         this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+}
+
+function drawVoronoi(canvasCtx, tri) {
+    canvasCtx.beginPath();
+    tri.forEach(function(prev) {
+        tri.forEach(function(curr) {
+            var tmp = 0;
+            prev.vertices.forEach(function(e) {
+                if (!curr.vertices.every(function(v) {
+                    if (v.compare(e))
+                        return false;
+                    else return true;
+                }))
+                    tmp++;
+            });
+
+            if (tmp == 2) {
+                canvasCtx.moveTo(prev.circumCircle.x, prev.circumCircle.y);
+                canvasCtx.lineTo(curr.circumCircle.x, curr.circumCircle.y);
+                canvasCtx.strokeStyle = '#FF0000';
+                canvasCtx.stroke();        
+            }
+        });
+    });
 }
 
 function init() {
@@ -255,6 +286,8 @@ function init() {
 
 function render() {
     DelanunayTriangulation.draw();
+    if (document.getElementById('voronoi').checked)
+        drawVoronoi(DelanunayTriangulation.canvasCtx, DelanunayTriangulation.triangles);
 }
     
 function animate() {

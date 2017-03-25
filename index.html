@@ -6,22 +6,41 @@
     <link rel="stylesheet" href="https://unpkg.com/blaze">
 </head>
 <body>
+    <a href="https://github.com/se0kjun/delaunay-triangulation"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/121cd7cbdc3e4855075ea8b558508b91ac463ac2/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"></a>
     <div class="title">
-        <h1 class="c-heading u-centered">delaunay-triangulation</h1>
+        <h1 class="c-heading u-centered">Delaunay triangulation & Voronoi diagram</h1>
     </div>
     <div class="canvas-wrapper">
-        <canvas id="triangulation" width="600" height="600"></canvas>
+        <canvas id="triangulation" width="900px" height="700px"></canvas>
     </div>
     <div class="u-centered triangulation-info">
         <p>Triangles: </p><p id="triangle_number"></p>
     </div>
-    <div class="u-center-block">
-        <label class="u-center-block__content c-toggle c-toggle--info">
+    <div class="canvas-wrapper">
+        <label class="c-toggle c-toggle--info">
             <input id="circumcircle" type="checkbox" checked>
             <div class="c-toggle__track">
                 <div class="c-toggle__handle"></div>
             </div>
             circumcircle
+        </label>
+    </div>
+    <div class="canvas-wrapper">
+        <label class="c-toggle c-toggle--info">
+            <input id="voronoi" type="checkbox">
+            <div class="c-toggle__track">
+                <div class="c-toggle__handle"></div>
+            </div>
+            voronoi diagram
+        </label>
+    </div>
+    <div class="canvas-wrapper">
+        <label class="c-toggle c-toggle--info">
+            <input id="delaunay" type="checkbox" checked>
+            <div class="c-toggle__track">
+                <div class="c-toggle__handle"></div>
+            </div>
+            delaunay triangle
         </label>
     </div>
 </body>
